@@ -13,22 +13,18 @@ jobs:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Download ImGui Source Files
+    - name: Download ImGui Source Zip
       run: |
-        git clone --depth 1 https://github.com imgui_src
+        curl -L -o imgui.zip "https://github.com"
+        unzip -q imgui.zip
+        mv imgui-master imgui_src
 
     - name: Set up iOS SDK Toolchain
       run: xcodebuild -version
         
     - name: Compile C++ Files into iOS Arm64 Dylib
       run: |
-        clang++ -dynamiclib -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
-        -arch arm64 -miphoneos-version-min=14.0 \
-        -std=c++17 \
-        -I. -Iimgui_src \
-        imgui_src/imgui.cpp imgui_src/imgui_draw.cpp imgui_src/imgui_widgets.cpp imgui_src/imgui_tables.cpp \
-        Settings.cpp Menu.cpp ESP.cpp \
-        -o libiOSESP.dylib
+        clang++ -dynamiclib -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -arch arm64 -miphoneos-version-min=14.0 -std=c++17 -I. -Iimgui_src imgui_src/imgui.cpp imgui_src/imgui_draw.cpp imgui_src/imgui_widgets.cpp imgui_src/imgui_tables.cpp Settings.cpp Menu.cpp ESP.cpp -o libiOSESP.dylib
 
     - name: Upload Compiled Dylib File As Artifact
       uses: actions/upload-artifact@v4
