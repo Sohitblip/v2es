@@ -3,28 +3,34 @@ name: Build iOS ESP Dylib
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch: # Isse aap manually bhi build start kar sakte ho
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-14 # GitHub ka official macOS runner
+    runs-on: macos-14
 
     steps:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
+
+    - name: Clone ImGui Repository
+      run: |
+        # Official ImGui source files ko download karna taaki imgui.h mil sake
+        git clone --depth 1 https://github.com imgui_src
 
     - name: Set up iOS SDK and Compiler Toolchain
       run: |
         echo "Checking available Xcode versions..."
         xcodebuild -version
         
-    - name: Compile C++ Files into iOS Arm64 Dylib
+    - name: Compile C++ Files with ImGui into iOS Arm64 Dylib
       run: |
-        # Clang compiler se arm64 architecture ke liye dylib compile karna
+        # Clang compiler me ImGui ke include path (-Iimgui_src) ko add karna aur files compile karna
         clang++ -dynamiclib -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
         -arch arm64 -miphoneos-version-min=14.0 \
         -std=c++17 \
-        -I. \
+        -I. -Iimgui_src \
+        imgui_src/imgui.cpp imgui_src/imgui_draw.cpp imgui_src/imgui_widgets.cpp imgui_src/imgui_tables.cpp \
         Settings.cpp Menu.cpp ESP.cpp \
         -o libiOSESP.dylib
         
