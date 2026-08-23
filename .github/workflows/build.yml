@@ -25,7 +25,7 @@ jobs:
         
     - name: Compile C++ Files into iOS Arm64 Dylib
       run: |
-        clang++ -dynamiclib -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -arch arm64 -miphoneos-version-min=14.0 -std=c++17 -framework UIKit -framework Foundation -I. -Iimgui_src imgui_src/imgui.cpp imgui_src/imgui_draw.cpp imgui_src/imgui_widgets.cpp imgui_src/imgui_tables.cpp Settings.cpp Menu.cpp ESP.cpp main.mm -o libiOSESP.dylib
+        clang++ -dynamiclib -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" -arch arm64 -miphoneos-version-min=14.0 -std=c++17 -framework UIKit -framework Foundation -framework QuartzCore -I. -Iimgui_src imgui_src/imgui.cpp imgui_src/imgui_draw.cpp imgui_src/imgui_widgets.cpp imgui_src/imgui_tables.cpp Settings.cpp Menu.cpp ESP.cpp main.mm -o libiOSESP.dylib
 
     - name: Upload Compiled Dylib File As Artifact
       uses: actions/upload-artifact@v4
