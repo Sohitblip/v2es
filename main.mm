@@ -2,47 +2,78 @@
 #import <UIKit/UIKit.h>
 #include <imgui.h>
 
-extern void DrawESP(); // Fetching core geometry graphics loop
-extern void RenderMenu(); // Fetching menu design handler
+extern void DrawESP();
+extern void RenderMenu();
 
-static bool is_imgui_ready = false;
+static bool backend_allocated = false;
 
-// Hardware window hook intercepting graphics clock safely
-void SafeRenderPipeline() {
-    if (!is_imgui_ready) {
+// Hardware Safe Drawing Call
+void FireOverlayPipeline() {
+    if (!backend_allocated) {
         ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2([UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height);
-        is_imgui_ready = true;
+        CGRect bounds = [UIScreen mainScreen].bounds;
+        io.DisplaySize = ImVec2(bounds.size.width, bounds.size.height);
+        backend_allocated = true;
     }
 
     ImGui::NewFrame();
-    RenderMenu();   // Draw Layout Box UI
-    DrawESP();      // Draw Line ESP geometry lines
+    
+    // Green color text watermark top-left corner par
+    ImDrawList* backgroundDrawList = ImGui::GetBackgroundDrawList();
+    if (backgroundDrawList) {
+        backgroundDrawList->AddText(ImVec2(30, 50), ImColor(0, 255, 0, 255), "Mohit ESP Connected Successfully!");
+    }
+
+    RenderMenu();   
+    DrawESP();      
     ImGui::Render();
 }
 
-// System event validation filter layout
-@interface OverlayHookController : NSObject
-+ (void)loadHookLoop;
+@interface MetalHookHandler : NSObject
++ (void)startOverlayClock;
++ (void)showMohitWelcomeAlert;
 @end
 
-@implementation OverlayHookController
-+ (void)loadHookLoop {
-    // 8 seconds safety pause for Unreal Engine assets loading safely into RAM
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(8.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(onFrameUpdate:)];
-        [displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+@implementation MetalHookHandler
+
+// Game open hote hi iOS Welcome Alert popup screen par aayega
++ (void)showMohitWelcomeAlert {
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    if (!rootVC) {
+        rootVC = [[[UIApplication sharedApplication] windows] firstObject].rootViewController;
+    }
+    
+    if (rootVC) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Mohit Mod System"
+                                                                       message:@"Welcome! Mohit ESP is now injected and working fine."
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Start Match"
+                                                           style:UIAlertActionStyleDefault
+                                                         handler:nil];
+        [alert addAction:okAction];
+        [rootVC presentViewController:alert animated:YES completion:nil];
+    }
+}
+
++ (void)startOverlayClock {
+    // 10 Seconds heavy buffer delay taaki Unreal Engine data stable ho sake
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        [self showMohitWelcomeAlert];
+        
+        CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(renderTick:)];
+        [displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
     });
 }
 
-+ (void)onFrameUpdate:(CADisplayLink *)sender {
++ (void)renderTick:(CADisplayLink *)sender {
     @autoreleasepool {
-        SafeRenderPipeline();
+        FireOverlayPipeline();
     }
 }
 @end
 
-// Core construction lifecycle initializer mapping target architecture context
-__attribute__((constructor)) static void init_ios_esp_hook() {
-    [OverlayHookController loadHookLoop];
+__attribute__((constructor)) static void load_safe_esp_entry() {
+    [MetalHookHandler startOverlayClock];
 }
