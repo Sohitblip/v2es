@@ -13,11 +13,12 @@ jobs:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Download ImGui Source Zip
-      run: |
-        curl -L -o imgui.zip "https://github.com"
-        unzip -q imgui.zip
-        mv imgui-master imgui_src
+    - name: Download ImGui Repository Automatically
+      uses: actions/checkout@v4
+      with:
+        repository: ocornut/imgui
+        ref: master
+        path: imgui_src
 
     - name: Set up iOS SDK Toolchain
       run: xcodebuild -version
