@@ -13,13 +13,14 @@ jobs:
     - name: Checkout Repository Code
       uses: actions/checkout@v4
 
-    - name: Clone ImGui Repository
-      run: git clone --depth 1 https://github.com imgui_src
+    - name: Download ImGui Source Files
+      run: |
+        git clone --depth 1 https://github.com imgui_src
 
-    - name: Set up iOS SDK and Compiler Toolchain
+    - name: Set up iOS SDK Toolchain
       run: xcodebuild -version
         
-    - name: Compile C++ Files with ImGui into iOS Arm64 Dylib
+    - name: Compile C++ Files into iOS Arm64 Dylib
       run: |
         clang++ -dynamiclib -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
         -arch arm64 -miphoneos-version-min=14.0 \
