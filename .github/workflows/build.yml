@@ -1,0 +1,37 @@
+name: Build iOS ESP Dylib
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # Isse aap manually bhi build start kar sakte ho
+
+jobs:
+  build:
+    runs-on: macos-14 # GitHub ka official macOS runner
+
+    steps:
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
+
+    - name: Set up iOS SDK and Compiler Toolchain
+      run: |
+        echo "Checking available Xcode versions..."
+        xcodebuild -version
+        
+    - name: Compile C++ Files into iOS Arm64 Dylib
+      run: |
+        # Clang compiler se arm64 architecture ke liye dylib compile karna
+        clang++ -dynamiclib -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
+        -arch arm64 -miphoneos-version-min=14.0 \
+        -std=c++17 \
+        -I. \
+        Settings.cpp Menu.cpp ESP.cpp \
+        -o libiOSESP.dylib
+        
+        echo "Compilation successful! dylib created."
+
+    - name: Upload Compiled Dylib File As Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: iOS-ESP-Dylib
+        path: libiOSESP.dylib
